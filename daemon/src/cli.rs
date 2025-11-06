@@ -55,6 +55,9 @@ pub enum Commands {
         /// keep Magic Wormhole out of the loop.
         #[arg(long)]
         no_join_code: bool,
+        /// Use an alternative magic wormhole rendezvous url
+        #[arg(long)]
+        rendezvous_url: Option<String>,
         /// Print the secret address. Useful for sharing with multiple people.
         #[arg(long)]
         show_secret_address: bool,
@@ -65,6 +68,9 @@ pub enum Commands {
     Join {
         /// Specify to connect to a new peer. Otherwise, try to connect to the most recent peer.
         join_code: Option<String>,
+        /// Use an alternative magic wormhole rendezvous url
+        #[arg(long)]
+        rendezvous_url: Option<String>,
         #[command(flatten)]
         sync_vcs: SyncVcsFlag,
     },
