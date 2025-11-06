@@ -5,12 +5,21 @@
 
 use anyhow::Result;
 use magic_wormhole::{transfer, AppID, Code, MailboxConnection, Wormhole};
-use std::{str::FromStr, time::Duration};
+use std::{borrow::Cow, str::FromStr, time::Duration};
 use tokio::time::sleep;
 use tracing::{error, info, warn};
 
-pub async fn put_secret_address_into_wormhole(address: &str) {
-    let config = transfer::APP_CONFIG.id(AppID::new("teamtype"));
+pub async fn put_secret_address_into_wormhole(address: &str, rendezvous_url: Option<String>) {
+    let config: magic_wormhole::AppConfig<transfer::AppVersion> = if let Some(url) = rendezvous_url
+    {
+        info!("Using rendezvous url {}", url);
+        transfer::APP_CONFIG
+            .id(AppID::new("teamtype"))
+            .rendezvous_url(Cow::Owned(url))
+    } else {
+        transfer::APP_CONFIG.id(AppID::new("teamtype"))
+    };
+
     let payload: Vec<u8> = address.into();
 
     tokio::spawn(async move {
@@ -41,8 +50,19 @@ pub async fn put_secret_address_into_wormhole(address: &str) {
     });
 }
 
-pub async fn get_secret_address_from_wormhole(code: &str) -> Result<String> {
-    let config = transfer::APP_CONFIG.id(AppID::new("teamtype"));
+pub async fn get_secret_address_from_wormhole(
+    code: &str,
+    rendezvous_url: Option<String>,
+) -> Result<String> {
+    let config: magic_wormhole::AppConfig<transfer::AppVersion> = if let Some(url) = rendezvous_url
+    {
+        info!("Using magic wormhole rendezvous url {}", url);
+        transfer::APP_CONFIG
+            .id(AppID::new("teamtype"))
+            .rendezvous_url(Cow::Owned(url))
+    } else {
+        transfer::APP_CONFIG.id(AppID::new("teamtype"))
+    };
 
     let mut wormhole =
         Wormhole::connect(MailboxConnection::connect(config, Code::from_str(code)?, false).await?)

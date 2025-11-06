@@ -76,6 +76,7 @@ async fn main() -> Result<()> {
                 Commands::Share {
                     init,
                     no_join_code,
+                    rendezvous_url,
                     show_secret_address,
                     sync_vcs: SyncVcsFlag { sync_vcs },
                     ..
@@ -86,6 +87,7 @@ async fn main() -> Result<()> {
                         peer: None,
                         emit_join_code: !no_join_code,
                         emit_secret_address: show_secret_address,
+                        rendezvous_url,
                         sync_vcs,
                     };
                     app_config = app_config_cli.merge(AppConfig::from_config_file(&config_file));
@@ -95,6 +97,7 @@ async fn main() -> Result<()> {
                 }
                 Commands::Join {
                     join_code,
+                    rendezvous_url,
                     sync_vcs: SyncVcsFlag { sync_vcs },
                     ..
                 } => {
@@ -103,6 +106,7 @@ async fn main() -> Result<()> {
                         peer: join_code.map(config::Peer::JoinCode),
                         emit_join_code: false,
                         emit_secret_address: false,
+                        rendezvous_url,
                         sync_vcs,
                     };
 
