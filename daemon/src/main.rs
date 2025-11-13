@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-use self::cli::{Cli, Commands, SyncVcsFlag};
+use self::cli::{Cli, Commands, SharedFlags};
 use anyhow::{bail, Context, Result};
 use clap::{CommandFactory as _, FromArgMatches as _};
 use std::path::{Path, PathBuf};
@@ -76,9 +76,12 @@ async fn main() -> Result<()> {
                 Commands::Share {
                     init,
                     no_join_code,
-                    rendezvous_url,
                     show_secret_address,
-                    sync_vcs: SyncVcsFlag { sync_vcs },
+                    shared_flags:
+                        SharedFlags {
+                            sync_vcs,
+                            magic_wormhole_rendezvous_url,
+                        },
                     ..
                 } => {
                     init_doc = init;
@@ -87,7 +90,7 @@ async fn main() -> Result<()> {
                         peer: None,
                         emit_join_code: !no_join_code,
                         emit_secret_address: show_secret_address,
-                        rendezvous_url,
+                        magic_wormhole_rendezvous_url,
                         sync_vcs,
                     };
                     app_config = app_config_cli.merge(AppConfig::from_config_file(&config_file));
@@ -97,8 +100,11 @@ async fn main() -> Result<()> {
                 }
                 Commands::Join {
                     join_code,
-                    rendezvous_url,
-                    sync_vcs: SyncVcsFlag { sync_vcs },
+                    shared_flags:
+                        SharedFlags {
+                            sync_vcs,
+                            magic_wormhole_rendezvous_url,
+                        },
                     ..
                 } => {
                     let app_config_cli = AppConfig {
@@ -106,7 +112,7 @@ async fn main() -> Result<()> {
                         peer: join_code.map(config::Peer::JoinCode),
                         emit_join_code: false,
                         emit_secret_address: false,
-                        rendezvous_url,
+                        magic_wormhole_rendezvous_url,
                         sync_vcs,
                     };
 
