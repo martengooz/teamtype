@@ -111,6 +111,7 @@ impl ConnectionManager {
         let endpoint = iroh::Endpoint::builder()
             .secret_key(secret_key)
             .alpns(vec![ALPN.to_vec()])
+            .discovery_local_network()
             .discovery_n0()
             .bind()
             .await?;
