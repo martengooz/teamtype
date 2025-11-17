@@ -17,7 +17,7 @@ pub async fn put_secret_address_into_wormhole(address: &str, rendezvous_url: Opt
         loop {
             let Ok(mailbox_connection) = MailboxConnection::create(config.clone(), 2).await else {
                 error!(
-                    "Failed to share join code via magic wormhole. Restart Teamtype to try again."
+                    "Failed to share join code via Magic Wormhole. Restart Teamtype to try again."
                 );
                 return;
             };
