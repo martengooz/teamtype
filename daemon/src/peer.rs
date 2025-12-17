@@ -10,7 +10,7 @@ use crate::daemon::DocumentActorHandle;
 use anyhow::{bail, Context, Result};
 use async_trait::async_trait;
 use iroh::endpoint::{RecvStream, SendStream};
-use iroh::{NodeAddr, SecretKey};
+use iroh::{NodeAddr, RelayMap, RelayMode, RelayNode, RelayUrl, SecretKey};
 use postcard::{from_bytes, to_allocvec};
 use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Write};
@@ -60,10 +60,14 @@ pub struct ConnectionManager {
 }
 
 impl ConnectionManager {
-    pub async fn new(document_handle: DocumentActorHandle, base_dir: &Path) -> Result<Self> {
+    pub async fn new(
+        document_handle: DocumentActorHandle,
+        base_dir: &Path,
+        iroh_relay: Option<String>,
+    ) -> Result<Self> {
         let (message_tx, message_rx) = mpsc::channel(1);
 
-        let (endpoint, my_passphrase) = Self::build_endpoint(base_dir).await?;
+        let (endpoint, my_passphrase) = Self::build_endpoint(base_dir, iroh_relay).await?;
 
         let secret_address = format!("{}#{}", endpoint.node_id(), my_passphrase);
 
@@ -105,15 +109,33 @@ impl ConnectionManager {
         Ok(())
     }
 
-    async fn build_endpoint(base_dir: &Path) -> Result<(iroh::Endpoint, SecretKey)> {
+    async fn build_endpoint(
+        base_dir: &Path,
+        iroh_relay: Option<String>,
+    ) -> Result<(iroh::Endpoint, SecretKey)> {
         let (secret_key, my_passphrase) = Self::get_keypair(base_dir);
 
-        let endpoint = iroh::Endpoint::builder()
+        let mut builder = iroh::Endpoint::builder()
             .secret_key(secret_key)
-            .alpns(vec![ALPN.to_vec()])
-            .discovery_n0()
-            .bind()
-            .await?;
+            .alpns(vec![ALPN.to_vec()]);
+
+        builder = if let Some(relay_url_str) = iroh_relay {
+            info!("Using custom Iroh relay url {}", relay_url_str);
+
+            let relay_url =
+                RelayUrl::from_str(&relay_url_str).context("Failed to parse Iroh relay URL")?;
+
+            let relay_node = RelayNode::from(relay_url);
+
+            let relay_map = RelayMap::from_iter([relay_node]);
+
+            builder.relay_mode(RelayMode::Custom(relay_map))
+        } else {
+            // Default case
+            builder.discovery_n0()
+        };
+
+        let endpoint = builder.bind().await?;
 
         Ok((endpoint, my_passphrase))
     }

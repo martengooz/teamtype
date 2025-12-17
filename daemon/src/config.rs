@@ -39,6 +39,7 @@ pub struct AppConfig {
     pub emit_join_code: bool,
     pub emit_secret_address: bool,
     pub magic_wormhole_relay: Option<String>,
+    pub iroh_relay: Option<String>,
     // Whether to sync version control directories like .git, .jj, ...
     pub sync_vcs: bool,
     pub username: Option<String>,
@@ -80,6 +81,9 @@ impl AppConfig {
                 ),
                 magic_wormhole_relay: general_section
                     .get("magic_wormhole_relay")
+                    .map(ToString::to_string),
+                iroh_relay: general_section
+                    .get("iroh_relay")
                     .map(ToString::to_string),
                 sync_vcs: false,
                 username: general_section
@@ -148,6 +152,7 @@ impl AppConfig {
                 emit_join_code: self.emit_join_code && other.emit_join_code,
                 emit_secret_address: self.emit_secret_address || other.emit_secret_address,
                 magic_wormhole_relay: self.magic_wormhole_relay.or(other.magic_wormhole_relay),
+                iroh_relay: self.iroh_relay.or(other.iroh_relay),
                 sync_vcs: self.sync_vcs || other.sync_vcs,
                 username: self.username.or(other.username),
             },
