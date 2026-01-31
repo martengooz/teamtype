@@ -60,10 +60,14 @@ pub struct ConnectionManager {
 }
 
 impl ConnectionManager {
-    pub async fn new(document_handle: DocumentActorHandle, base_dir: &Path) -> Result<Self> {
+    pub async fn new(
+        document_handle: DocumentActorHandle,
+        base_dir: &Path,
+        enable_local_discovery: bool,
+    ) -> Result<Self> {
         let (message_tx, message_rx) = mpsc::channel(1);
 
-        let (endpoint, my_passphrase) = Self::build_endpoint(base_dir).await?;
+        let (endpoint, my_passphrase) = Self::build_endpoint(base_dir, enable_local_discovery).await?;
 
         let secret_address = format!("{}#{}", endpoint.node_id(), my_passphrase);
 
@@ -105,15 +109,27 @@ impl ConnectionManager {
         Ok(())
     }
 
-    async fn build_endpoint(base_dir: &Path) -> Result<(iroh::Endpoint, SecretKey)> {
+    async fn build_endpoint(
+        base_dir: &Path,
+        enable_local_discovery: bool,
+    ) -> Result<(iroh::Endpoint, SecretKey)> {
         let (secret_key, my_passphrase) = Self::get_keypair(base_dir);
 
-        let endpoint = iroh::Endpoint::builder()
+        let mut builder = iroh::Endpoint::builder()
             .secret_key(secret_key)
             .alpns(vec![ALPN.to_vec()])
-            .discovery_n0()
-            .bind()
-            .await?;
+            .discovery_n0();
+
+        if enable_local_discovery {
+            info!(
+                "Local network discovery (mDNS) enabled. \
+                 Peers on the same network can discover each other without internet connectivity."
+            );
+            builder = builder.discovery_local_network();
+        } else {
+        }
+
+        let endpoint = builder.bind().await?;
 
         Ok((endpoint, my_passphrase))
     }

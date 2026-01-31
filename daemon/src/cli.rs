@@ -46,6 +46,10 @@ pub struct ShareJoinFlags {
     /// Use an alternative Magic Wormhole mailbox server relay url
     #[arg(long)]
     pub magic_wormhole_relay: Option<String>,
+    /// Enable local network discovery via mDNS. Allows peers on the same local
+    /// network to discover each other without requiring internet connectivity.
+    #[arg(long)]
+    pub enable_local_discovery: bool,
     #[arg(long)]
     /// The name that others see next to your cursor. Defaults to your Git username.
     pub username: Option<String>,

@@ -23,6 +23,7 @@ pub const LEGACY_CONFIG_DIR: &str = ".ethersync";
 
 const EMIT_JOIN_CODE_DEFAULT: bool = true;
 const EMIT_SECRET_ADDRESS_DEFAULT: bool = false;
+const ENABLE_LOCAL_DISCOVERY_DEFAULT: bool = false;
 // TODO: Generate a random funny name.
 const USERNAME_FALLBACK: &str = "Anonymous";
 
@@ -40,6 +41,7 @@ pub struct AppConfig {
     pub emit_join_code: bool,
     pub emit_secret_address: bool,
     pub magic_wormhole_relay: Option<String>,
+    pub enable_local_discovery: bool,
     // Whether to sync version control directories like .git, .jj, ...
     pub sync_vcs: bool,
     pub username: Option<String>,
@@ -98,6 +100,15 @@ impl AppConfig {
                     .get("magic_wormhole_relay")
                     .map(ToString::to_string)
             }),
+            enable_local_discovery: app_config_cli.enable_local_discovery
+                || general_section.get("enable_local_discovery").map_or(
+                    ENABLE_LOCAL_DISCOVERY_DEFAULT,
+                    |eld| {
+                        eld.parse().expect(
+                            "Failed to parse config parameter `enable_local_discovery` as bool",
+                        )
+                    },
+                ),
             sync_vcs: app_config_cli.sync_vcs,
             username: Some(username),
         }

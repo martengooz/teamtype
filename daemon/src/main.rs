@@ -85,6 +85,7 @@ async fn main() -> Result<()> {
                             magic_wormhole_relay,
                             sync_vcs,
                             username,
+                            enable_local_discovery,
                             ..
                         },
                     show_secret_address,
@@ -98,6 +99,7 @@ async fn main() -> Result<()> {
                         emit_join_code: !no_join_code,
                         emit_secret_address: show_secret_address,
                         magic_wormhole_relay,
+                        enable_local_discovery,
                         sync_vcs,
                         username,
                     };
@@ -113,6 +115,7 @@ async fn main() -> Result<()> {
                             magic_wormhole_relay,
                             sync_vcs,
                             username,
+                            enable_local_discovery,
                             ..
                         },
                     ..
@@ -123,6 +126,7 @@ async fn main() -> Result<()> {
                         emit_join_code: false,
                         emit_secret_address: false,
                         magic_wormhole_relay,
+                        enable_local_discovery,
                         sync_vcs,
                         username,
                     };
